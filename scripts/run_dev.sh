@@ -1,0 +1,1 @@
+flask --app musicquiz run --debug
