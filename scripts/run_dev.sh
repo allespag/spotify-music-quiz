@@ -1,1 +1,1 @@
-flask --app musicquiz run --debug
+flask --app musicquiz run --debug --port=8008
