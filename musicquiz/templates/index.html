@@ -1,14 +1,10 @@
 {% extends "base.html" %}
 {% block content %}
 <div class="menu">
-    {% if client is not none %}
-    Hi, {{ client.me().display_name }} !
-    {% endif %}
     <ul>
-        {% if client is none %}
-        <li><a href="{{ url_for('login') }}">LOGIN</li>
-        {% endif %}
-        <li><a href="{{ url_for('index') }}">HOME</a></li>
+        <li><a href="#">Create lobby</a></li>
+        <li><a href="#">Join lobby</a></li>
+        <li><a href="#">About</a></li>
     </ul>
 </div>
 {% endblock %}
