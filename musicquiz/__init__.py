@@ -10,21 +10,6 @@ from . import spotify
 CONFIGS_ROOT = Path("configs")
 
 
-def _get_client(spotify_config: spotify.SpotifyConfig) -> spotipy.Spotify | None:
-    cache_handler = spotipy.cache_handler.FlaskSessionCacheHandler(session)
-    auth_manager = spotipy.oauth2.SpotifyOAuth(
-        client_id=spotify_config.client_id,
-        client_secret=spotify_config.client_secret,
-        redirect_uri=spotify_config.redirect_uri,
-        cache_handler=cache_handler,
-    )
-
-    if not auth_manager.validate_token(cache_handler.get_cached_token()):
-        return None
-
-    return spotipy.Spotify(auth_manager=auth_manager)
-
-
 def create_app() -> Flask:
     app = Flask(__name__)
 
@@ -36,10 +21,10 @@ def create_app() -> Flask:
         app.config.from_pyfile(str(CONFIGS_ROOT / "production_config.py"))
 
     spotify_config = spotify.SpotifyConfig.load(CONFIGS_ROOT / "spotify.toml")
+    client = None
 
     @app.route("/")
     def index():
-        client = _get_client(spotify_config)
         return render_template("index.html", client=client)
 
     # https://github.com/spotipy-dev/spotipy/blob/master/examples/app.py
@@ -54,9 +39,12 @@ def create_app() -> Flask:
             show_dialog=True,
         )
 
+        nonlocal client
+
         # Already logged in
         if request.args.get("code"):
             auth_manager.get_access_token(request.args.get("code"))
+            client = spotipy.Spotify(auth_manager=auth_manager)
             return redirect("/")
 
         # Redirect to Spotify authentication page
@@ -65,29 +53,16 @@ def create_app() -> Flask:
             return redirect(auth_url)
 
         # Logged
+        client = spotipy.Spotify(auth_manager=auth_manager)
         return redirect("/")
 
     @app.route("/logout")
     def logout():
+        nonlocal client
+        client = None
         session.pop("token_info", None)
-        return redirect("/")
 
-    # remove
-    @app.route("/client")
-    def get_client():
-        cache_handler = spotipy.cache_handler.FlaskSessionCacheHandler(session)
-        auth_manager = spotipy.oauth2.SpotifyOAuth(
-            client_id=spotify_config.client_id,
-            client_secret=spotify_config.client_secret,
-            redirect_uri=spotify_config.redirect_uri,
-            cache_handler=cache_handler,
-        )
-        if not auth_manager.validate_token(cache_handler.get_cached_token()):
-            app.logger.info("No spotify client")
-            return redirect("/")
-        spotify = spotipy.Spotify(auth_manager=auth_manager)
-        breakpoint()
-        return spotify.current_user()
+        return redirect("/")
 
     # TODO: create a `404.html` template with a fun gif !
     @app.errorhandler(exceptions.NotFound)
