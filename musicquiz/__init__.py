@@ -1,33 +1,29 @@
 import os
+import tomllib
 from pathlib import Path
 
 import spotipy
 from flask import Flask, redirect, render_template, request, session
+from flask_socketio import SocketIO
 from werkzeug import exceptions
 
 from . import spotify
 
-CONFIGS_ROOT = Path("configs")
+socketio = SocketIO()
 
 
-def create_app() -> Flask:
+def create_app(config_path: Path) -> Flask:
     app = Flask(__name__)
+    app.config.from_file(str(config_path), load=tomllib.load, text=False)
 
-    if app.debug:
-        app.config.update(
-            SECRET_KEY=os.urandom(64),
-        )
-    else:
-        app.config.from_pyfile(str(CONFIGS_ROOT / "production_config.py"))
+    spotify_config = spotify.SpotifyConfig.load(config_path)
 
-    spotify_config = spotify.SpotifyConfig.load(CONFIGS_ROOT / "spotify.toml")
     client = None
 
     @app.route("/")
     def index():
         return render_template("index.html", client=client)
 
-    # https://github.com/spotipy-dev/spotipy/blob/master/examples/app.py
     @app.route("/login")
     def login():
         cache_handler = spotipy.cache_handler.FlaskSessionCacheHandler(session)
@@ -35,8 +31,9 @@ def create_app() -> Flask:
             spotify_config.client_id,
             spotify_config.client_secret,
             spotify_config.redirect_uri,
-            cache_handler=cache_handler,
+            # scope,
             show_dialog=True,
+            cache_handler=cache_handler,
         )
 
         nonlocal client
@@ -68,5 +65,7 @@ def create_app() -> Flask:
     @app.errorhandler(exceptions.NotFound)
     def not_found(error: exceptions.NotFound):
         return redirect("/")
+
+    socketio.init_app(app)
 
     return app
