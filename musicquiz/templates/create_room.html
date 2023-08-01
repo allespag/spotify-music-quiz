@@ -1,0 +1,16 @@
+<!-- Get basic game parameters -->
+
+{% extends "base.html" %}
+{% block head %}
+{{ super() }}
+<script src="https://cdn.socket.io/4.6.0/socket.io.min.js" integrity="sha384-c79GN5VsunZvi+Q/WObgk2in0CbZsHnjEqvFxC5DxHn9lTfNce2WW6h2pH6u/kF+" crossorigin="anonymous"></script>
+<script src="{{ url_for('static', filename='js/create_room.js') }}"></script>
+{% endblock %}
+{% block content %}
+<div>
+    <form>
+        <input id="roomID" type="text" required>
+    </form>
+    <button id="sendRoomCreatedButton">Play</button>
+</div>
+{% endblock %}

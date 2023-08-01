@@ -1,16 +1,19 @@
 import tomllib
+import typing as tp
 from functools import wraps
 from pathlib import Path
 
 import spotipy
 from flask import Flask, redirect, render_template, request, session, url_for
-from flask_socketio import SocketIO
+from flask_socketio import SocketIO, join_room, rooms
 from werkzeug import exceptions
 
 from . import spotify
-from .events import init_socketio
 
 socketio = SocketIO()
+
+# TODO:
+# - [ ] Give a `client_id` to our clients
 
 
 def create_app(config_path: Path) -> Flask:
@@ -21,14 +24,26 @@ def create_app(config_path: Path) -> Flask:
 
     client = None
 
-    def login_required(f):
+    def login_required(f: tp.Callable):
         @wraps(f)
-        def decorated_function(*args, **kwargs):
+        def decorated_function(*args: tp.Any, **kwargs: tp.Any):
             if client is None:
                 return redirect(url_for("login", next=request.url))
             return f(*args, **kwargs)
 
         return decorated_function
+
+    @socketio.event
+    def room_joined(data: dict):
+        print(data)
+
+    @socketio.event
+    def room_created(data: dict):
+        room_id = data["room_id"]
+        assert room_id is not None
+        join_room(room_id)
+        url = url_for("room", room_id=room_id)
+        socketio.emit("redirect", {"url": url})
 
     @app.route("/")
     def index():
@@ -72,20 +87,18 @@ def create_app(config_path: Path) -> Flask:
 
         return redirect("/")
 
-    @app.route("/room/<string:id_>")
+    @app.route("/room/<string:room_id>")
     @login_required
-    def room(id_: str):
-        raise NotImplementedError
+    def room(room_id: str):
+        # TODO: verify that the room exists
+        x = rooms()
+        breakpoint()
+        return render_template("room.html", client=client, room_id=room_id)
 
     @app.route("/create_room")
     @login_required
     def create_room():
-        return render_template("create_room.html")
-
-    @app.route("/join_room")
-    @login_required
-    def join_room():
-        raise NotImplementedError
+        return render_template("create_room.html", client=client)
 
     @app.route("/about")
     def about():
@@ -96,7 +109,6 @@ def create_app(config_path: Path) -> Flask:
     def not_found(error: exceptions.NotFound):
         return redirect("/")
 
-    init_socketio(socketio)
     socketio.init_app(app)
 
     return app
