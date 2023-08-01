@@ -5,6 +5,7 @@
 - [x] Get a Spotify Client
 - [ ] Create basic templates for most of the pages
 - [ ] Lobby system
+    - [ ] create_room: prompt un id, si l'id existe on se co sinon un petit message d'erreur sympa
 - [ ] Game algorithm
 - [ ] Make the pages pretty
 
@@ -14,3 +15,4 @@
 - [ ] `base.html` display spotify profil pic
 - [ ] Add `fav.ico`
 - [ ] Write `about` content
+- [ ] Give an id to the client
