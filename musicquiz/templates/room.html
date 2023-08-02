@@ -6,6 +6,10 @@
 {% endblock %}
 
 {% block content %}
-<h1>Welcome to {{ room_id }} !</h1>
-<button id="sendMessageButton">Send Message</button>
+<h1>Welcome to {{ room.id_ }} !</h1>
+<ul>
+    {% for client in room.clients %}
+    <li>{{ client.me().display_name }}</li>
+    {% endfor %}
+</ul>
 {% endblock %}

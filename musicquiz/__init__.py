@@ -4,16 +4,14 @@ from functools import wraps
 from pathlib import Path
 
 import spotipy
-from flask import Flask, redirect, render_template, request, session, url_for
-from flask_socketio import SocketIO, join_room, rooms
+from flask import Flask, abort, redirect, render_template, request, session, url_for
+from flask_socketio import SocketIO
 from werkzeug import exceptions
 
 from . import spotify
+from .room import RoomFactory
 
 socketio = SocketIO()
-
-# TODO:
-# - [ ] Give a `client_id` to our clients
 
 
 def create_app(config_path: Path) -> Flask:
@@ -23,6 +21,8 @@ def create_app(config_path: Path) -> Flask:
     spotify_config = spotify.SpotifyConfig.load(config_path)
 
     client = None
+
+    room_factory = RoomFactory()
 
     def login_required(f: tp.Callable):
         @wraps(f)
@@ -35,13 +35,20 @@ def create_app(config_path: Path) -> Flask:
 
     @socketio.event
     def room_joined(data: dict):
-        print(data)
+        room_id = data["room_id"]
+        r = room_factory.get_room(room_id)
+
+        if r is None:
+            raise NotImplementedError
+
+        r.join(client)
 
     @socketio.event
     def room_created(data: dict):
         room_id = data["room_id"]
+        r = room_factory.create_room(room_id)
+        r.join(client)
 
-        join_room(room_id)
         socketio.emit("redirect", {"url": url_for("room", room_id=room_id)})
 
     @app.route("/")
@@ -89,8 +96,12 @@ def create_app(config_path: Path) -> Flask:
     @app.route("/room/<string:room_id>")
     @login_required
     def room(room_id: str):
-        # TODO: verify that the room exists
-        return render_template("room.html", client=client, room_id=room_id)
+        r = room_factory.get_room(room_id)
+
+        if r is None:
+            abort(404)
+        else:
+            return render_template("room.html", client=client, room=r)
 
     @app.route("/create_room")
     @login_required
@@ -104,6 +115,7 @@ def create_app(config_path: Path) -> Flask:
     # TODO: create a `404.html` template with a fun gif !
     @app.errorhandler(exceptions.NotFound)
     def not_found(error: exceptions.NotFound):
+        app.logger.debug("a 404 error occurs")  # TODO: remove
         return redirect("/")
 
     socketio.init_app(app)
