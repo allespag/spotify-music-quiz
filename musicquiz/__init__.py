@@ -40,10 +40,9 @@ def create_app(config_path: Path) -> Flask:
     @socketio.event
     def room_created(data: dict):
         room_id = data["room_id"]
-        assert room_id is not None
+
         join_room(room_id)
-        url = url_for("room", room_id=room_id)
-        socketio.emit("redirect", {"url": url})
+        socketio.emit("redirect", {"url": url_for("room", room_id=room_id)})
 
     @app.route("/")
     def index():
@@ -91,8 +90,6 @@ def create_app(config_path: Path) -> Flask:
     @login_required
     def room(room_id: str):
         # TODO: verify that the room exists
-        x = rooms()
-        breakpoint()
         return render_template("room.html", client=client, room_id=room_id)
 
     @app.route("/create_room")
