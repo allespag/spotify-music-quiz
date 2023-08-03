@@ -16,7 +16,7 @@ class Room:
 
     def leave(self, client):
         self.clients.remove(client)
-        leave_room(client)
+        leave_room(self.id_)
 
 
 class RoomFactory:
@@ -24,7 +24,7 @@ class RoomFactory:
         self.rooms = {}
 
     def create_room(self, room_id: str) -> Room:
-        if self.room_exists(room_id):
+        if self.does_room_exist(room_id):
             raise RoomFactoryException(f"{room_id} already exists")
         else:
             room = Room(room_id)
@@ -34,5 +34,5 @@ class RoomFactory:
     def get_room(self, room_id: str) -> Room | None:
         return self.rooms.get(room_id, None)
 
-    def room_exists(self, room_id: str) -> bool:
+    def does_room_exist(self, room_id: str) -> bool:
         return room_id in self.rooms

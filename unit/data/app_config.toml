@@ -1,0 +1,7 @@
+SECRET_KEY = "some_secret_key"
+
+[spotify]
+
+client_id = "some_client_id"
+client_secret = "some_client_secret"
+redirect_uri = "some_redirect_uri"
