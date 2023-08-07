@@ -57,12 +57,13 @@ def create_app(config_path: Path) -> Flask:
 
     @app.route("/login")
     def login():
+        scope = "playlist-read-private"
         cache_handler = spotipy.cache_handler.FlaskSessionCacheHandler(session)
         auth_manager = spotipy.oauth2.SpotifyOAuth(
             spotify_config.client_id,
             spotify_config.client_secret,
             spotify_config.redirect_uri,
-            # scope,
+            scope=scope,
             show_dialog=True,
             cache_handler=cache_handler,
         )
@@ -111,6 +112,17 @@ def create_app(config_path: Path) -> Flask:
     @app.route("/about")
     def about():
         raise NotImplementedError
+
+    # TODO: remove
+    @app.route("/poc")
+    @login_required
+    def poc():
+        from musicquiz.game.poc import setup
+
+        assert client is not None
+
+        setup(client)
+        return redirect(url_for("/"))
 
     # TODO: create a `404.html` template with a fun gif !
     @app.errorhandler(exceptions.NotFound)

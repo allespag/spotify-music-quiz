@@ -1,3 +1,5 @@
+// proof of concept using socketio
+
 console.log("poc.js loaded");
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -6,11 +8,4 @@ document.addEventListener("DOMContentLoaded", () => {
   socket.on("connect", () => {
     console.log("Connected to the server.");
   });
-
-  function sendMessage() {
-    socket.emit("room_joined", { salut: 0 });
-  }
-  document
-    .getElementById("sendMessageButton")
-    .addEventListener("click", sendMessage);
 });
