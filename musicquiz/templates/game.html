@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block content %}
+<div>
+    <div id="questionContainer">
+        <!-- The MCQ items will be dynamically added here -->
+      </div>
+      <button id="nextButton">Next</button>
+
+
+    <script src="{{ url_for('static', filename='js/game.js') }}"></script>
+    <script>
+        run(JSON.parse({{ mcq | tojson}}))
+    </script>
+</div>
+{% endblock %}

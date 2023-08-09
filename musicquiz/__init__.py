@@ -121,13 +121,12 @@ def create_app(config_path: Path) -> Flask:
 
         assert client is not None
 
-        setup(client)
-        return redirect(url_for("/"))
+        mcq = setup(client)
+        return render_template("game.html", client=client, mcq=mcq)
 
     # TODO: create a `404.html` template with a fun gif !
     @app.errorhandler(exceptions.NotFound)
     def not_found(error: exceptions.NotFound):
-        app.logger.debug("a 404 error occurs")  # TODO: remove
         return redirect("/")
 
     socketio.init_app(app)

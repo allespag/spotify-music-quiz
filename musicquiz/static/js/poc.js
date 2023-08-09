@@ -1,5 +1,5 @@
 // proof of concept using socketio
-
+// TODO: remove
 console.log("poc.js loaded");
 
 document.addEventListener("DOMContentLoaded", () => {
