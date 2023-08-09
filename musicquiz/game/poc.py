@@ -66,12 +66,16 @@ def setup(client: spotipy.Spotify) -> str:
         def from_spotify_playlist_id(cls, spotify_playlist_id: str) -> MCQ:
             items = []
 
+            # (1) Get all tracks
             tracks = client.playlist_tracks(spotify_playlist_id)
             assert tracks is not None
-            for track in choices(tracks["items"], k=MCQ.LENGTH):
-                track = track["track"]
+            tracks = tracks["items"]
+            # (2) Ensure that we have a preview url
+            tracks = [
+                track["track"] for track in tracks if track["track"]["preview_url"]
+            ]
+            for track in choices(tracks, k=MCQ.LENGTH):
                 item = ItemMCQ.from_spotify_track(track)
-
                 items.append(item)
 
             return cls(items=items)
