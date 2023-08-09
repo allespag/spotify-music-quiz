@@ -3,13 +3,13 @@
 <div>
     <div id="questionContainer">
         <!-- The MCQ items will be dynamically added here -->
-      </div>
-      <button id="nextButton">Next</button>
+    </div>
 
-
-    <script src="{{ url_for('static', filename='js/game.js') }}"></script>
+    <script src="https://cdn.jsdelivr.net/npm/p5@1.4.2/lib/p5.js"></script>
+    <script src="https://cdn.JsDelivr.net/npm/p5/lib/addons/p5.sound.min.js"></script>
+    <script src="{{ url_for('static', filename='js/verdadero_game.js') }}"></script>
     <script>
-        run(JSON.parse({{ mcq | tojson}}))
+        const items = JSON.parse({{ mcq | tojson}})["items"];
     </script>
 </div>
 {% endblock %}
