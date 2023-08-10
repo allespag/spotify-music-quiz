@@ -11,7 +11,8 @@
 
 <body>
     <div id="header">
-        <div>Spotify Music Quiz</div>
+        <div>
+            <a id="return-home" href="{{ url_for('index') }}">Spotify Music Quiz</a>
         <div>
             {% if client is not none %}
             Hi, {{ client.me().display_name }} !
@@ -22,6 +23,7 @@
         </div>
     </div>
     <div id="content">{% block content %}{% endblock %}</div>
+    <img class="index-img-background unselectable" src="{{ url_for('static', filename='media/the_servile_transparent.png') }}">
 </body>
 
 </html>

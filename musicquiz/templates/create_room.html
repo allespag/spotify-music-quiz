@@ -7,9 +7,10 @@
 <script src="{{ url_for('static', filename='js/create_room.js') }}"></script>
 {% endblock %}
 {% block content %}
-<div>
+<div id="create-room-form">
     <form>
-        <input id="roomID" type="text" required>
+        <input id="roomID" type="text" placeholder="Room name" autocomplete="off">
+        <br>
     </form>
     <button id="sendRoomCreatedButton">Play</button>
 </div>
