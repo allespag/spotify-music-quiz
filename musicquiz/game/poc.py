@@ -6,15 +6,6 @@ from random import choices
 import spotipy
 from pydantic import BaseModel
 
-# class AnswerStrategy(tp.Protocol):
-#     def is_right_answer(self, answer: Track, proposed_answer: Track) -> bool:
-#         ...
-
-
-# class TitleAnswerStrategy:
-#     def is_right_answer(self, answer: Track, proposed_answer: Track) -> bool:
-#         return answer.title == proposed_answer.title
-
 
 class Track(BaseModel):
     title: str

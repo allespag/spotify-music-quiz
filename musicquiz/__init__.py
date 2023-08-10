@@ -9,7 +9,7 @@ from flask_socketio import SocketIO
 from werkzeug import exceptions
 
 from . import spotify
-from .room import RoomFactory
+from .room import RoomFactory, RoomFactoryException
 
 socketio = SocketIO()
 
@@ -46,10 +46,14 @@ def create_app(config_path: Path) -> Flask:
     @socketio.event
     def room_created(data: dict):
         room_id = data["room_id"]
-        r = room_factory.create_room(room_id)
-        r.join(client)
-
-        socketio.emit("redirect", {"url": url_for("room", room_id=room_id)})
+        try:
+            r = room_factory.create_room(room_id)
+        except RoomFactoryException as e:
+            # TODO: tell the user that the room already exists
+            raise e
+        else:
+            r.join(client)
+            socketio.emit("redirect", {"url": url_for("room", room_id=room_id)})
 
     @app.route("/")
     def index():
