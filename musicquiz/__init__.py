@@ -3,6 +3,7 @@ import typing as tp
 from functools import wraps
 from pathlib import Path
 
+import markdown
 import spotipy
 from flask import Flask, abort, redirect, render_template, request, session, url_for
 from flask_socketio import SocketIO
@@ -106,10 +107,10 @@ def create_app(config_path: Path) -> Flask:
 
         if r is None:
             abort(404)
-        else:
-            assert client is not None
-            mcq = setup(client)
-            return render_template("game.html", client=client, mcq=mcq)
+
+        assert client is not None
+        mcq = setup(client)
+        return render_template("game.html", client=client, mcq=mcq)
 
     @app.route("/create_room")
     @login_required
@@ -118,7 +119,13 @@ def create_app(config_path: Path) -> Flask:
 
     @app.route("/about")
     def about():
-        raise NotImplementedError
+        if app.static_folder is None:
+            abort(404)
+
+        about_md = Path(app.static_folder) / "media" / "about.md"
+        about_html = markdown.markdown(about_md.read_text(encoding="utf-8"))
+
+        return render_template("about.html", client=client, about=about_html)
 
     # TODO: create a `404.html` template with a fun gif !
     @app.errorhandler(exceptions.NotFound)

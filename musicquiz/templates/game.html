@@ -1,10 +1,6 @@
 {% extends "base.html" %}
 {% block content %}
 <div>
-    <div id="questionContainer">
-        <!-- The MCQ items will be dynamically added here -->
-    </div>
-
     <script src="https://cdn.jsdelivr.net/npm/p5@1.4.2/lib/p5.js"></script>
     <script src="https://cdn.JsDelivr.net/npm/p5/lib/addons/p5.sound.min.js"></script>
     <script src="{{ url_for('static', filename='js/game.js') }}"></script>
