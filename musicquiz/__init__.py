@@ -9,6 +9,7 @@ from flask_socketio import SocketIO
 from werkzeug import exceptions
 
 from . import spotify
+from .game import setup
 from .room import RoomFactory, RoomFactoryException
 
 socketio = SocketIO()
@@ -106,7 +107,9 @@ def create_app(config_path: Path) -> Flask:
         if r is None:
             abort(404)
         else:
-            return render_template("room.html", client=client, room=r)
+            assert client is not None
+            mcq = setup(client)
+            return render_template("game.html", client=client, mcq=mcq)
 
     @app.route("/create_room")
     @login_required
@@ -116,17 +119,6 @@ def create_app(config_path: Path) -> Flask:
     @app.route("/about")
     def about():
         raise NotImplementedError
-
-    # TODO: remove
-    @app.route("/poc")
-    @login_required
-    def poc():
-        from musicquiz.game.poc import setup
-
-        assert client is not None
-
-        mcq = setup(client)
-        return render_template("game.html", client=client, mcq=mcq)
 
     # TODO: create a `404.html` template with a fun gif !
     @app.errorhandler(exceptions.NotFound)

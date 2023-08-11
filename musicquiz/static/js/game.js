@@ -1,55 +1,13 @@
-var currentQuestionIndex = 0;
-var questionContainer = document.getElementById("questionContainer");
-var nextButton = document.getElementById("nextButton");
-
-function createMCQ(questionData) {
-  var questionDiv = document.createElement("div");
-  questionDiv.classList.add("question");
-
-  soundFile = loadSound(items[currentQuestionIndex].answer.preview_url);
-  soundFile.setVolume(0.2);
-
-  var choices = [questionData.answer, ...questionData.choices].sort(
-    () => Math.random() - 0.5
-  );
-
-  for (var i = 0; i < choices.length; i++) {
-    var optionDiv = document.createElement("div");
-    optionDiv.classList.add("option");
-
-    var radioInput = document.createElement("input");
-    radioInput.type = "radio";
-    radioInput.name = "answer" + currentQuestionIndex;
-    radioInput.value = choices[i];
-
-    var label = document.createElement("label");
-    label.appendChild(radioInput);
-    label.appendChild(document.createTextNode(choices[i].title));
-
-    optionDiv.appendChild(label);
-    questionDiv.appendChild(optionDiv);
-  }
-
-  questionContainer.appendChild(questionDiv);
-}
-
-function clearQuestions() {
-  questionContainer.innerHTML = "";
-}
-
-function showNextQuestion() {
-  clearQuestions();
-  if (currentQuestionIndex < items.length) {
-    createMCQ(items[currentQuestionIndex]);
-    currentQuestionIndex++;
-  } else {
-    questionContainer.textContent = "All questions completed!";
-    nextButton.style.display = "none";
-  }
-}
-
+var fft;
 var canvas;
 var soundFile;
+var currentItem;
+var currentItemIndex = 0;
+
+function renderUserMustClick() {
+  textAlign(CENTER, CENTER);
+  text("Click to start!", width / 2, height / 2);
+}
 
 function renderWave() {
   strokeWeight(3);
@@ -87,37 +45,104 @@ function renderProgressBar() {
   line(0, progressBarY, progressBarX, progressBarY);
 }
 
+class ItemMCQ {
+  constructor(goodAnswer, badAnswers) {
+    this.goodAnswer = goodAnswer;
+    this.badAnswers = badAnswers;
+    this.rendered = false;
+    this.div = createDiv();
+  }
+
+  getChoices() {
+    return [this.goodAnswer, ...this.badAnswers].sort(
+      () => Math.random() - 0.5
+    );
+  }
+
+  submit(title) {
+    if (title == this.goodAnswer.title) {
+      // TODO: conffetti explosion animation ?
+    } else {
+      // TODO: sad rain animation ?
+    }
+    getNextItem();
+  }
+
+  renderForm() {
+    var form = createElement("form");
+    var choices = this.getChoices();
+
+    for (var i = 0; i < choices.length; i++) {
+      let choice = choices[i];
+      let radio = createRadio("choices");
+      radio.option(choice.title);
+      radio.changed(() => this.submit(choices.title));
+      form.child(radio);
+    }
+
+    this.div.child(form);
+  }
+
+  renderSound() {
+    soundFile = loadSound(this.goodAnswer.preview_url, () => {
+      soundFile.play();
+    });
+    soundFile.setVolume(0.2);
+  }
+
+  render() {
+    this.renderSound();
+    this.renderForm();
+    this.rendered = true;
+  }
+
+  clear() {
+    this.div.html("");
+    soundFile.pause();
+    this.rendered = false;
+  }
+}
+
+function getNextItem() {
+  if (currentItem !== undefined) {
+    currentItem.clear();
+  }
+  currentItem = new ItemMCQ(
+    items[currentItemIndex].answer,
+    items[currentItemIndex].choices
+  );
+  currentItemIndex++;
+}
+
 function setup() {
   canvas = createCanvas(windowWidth, windowHeight);
   canvas.position(0, 0);
   canvas.style("z-index", "-1");
   angleMode(DEGREES);
 
-  // soundFile = loadSound(items[currentQuestionIndex].answer.preview_url);
-  // soundFile.setVolume(0.2);
-
-  nextButton.addEventListener("click", showNextQuestion);
-
-  showNextQuestion();
-
-  // Temporary button
-  toggleMusicButton = createButton("toggle music");
-  toggleMusicButton.mousePressed(() => {
-    if (soundFile.isPlaying()) {
-      soundFile.pause();
-    } else {
-      soundFile.play();
-    }
-  });
-  toggleMusicButton.position(0, 0);
-
+  //
   fft = new p5.FFT();
+
+  //
+  getAudioContext().suspend();
+
+  // get the first item in the series
+  getNextItem();
 }
 
 function draw() {
   clear();
+  background(0);
   stroke(255);
-  renderProgressBar();
+
+  if (getAudioContext().state === "suspended") {
+    renderUserMustClick();
+  } else {
+    if (!currentItem.rendered) {
+      currentItem.render();
+    }
+    renderProgressBar();
+  }
   renderWave();
 }
 
@@ -126,5 +151,5 @@ function windowResized() {
 }
 
 function mousePressed() {
-  console.log(height, mouseY);
+  userStartAudio();
 }
