@@ -15,3 +15,4 @@ Also, I used [p5.js](https://p5js.org/) to create the *animations*.
 * Win/loss animation
 * Multiplayer
 * More tests
+* Volume slider

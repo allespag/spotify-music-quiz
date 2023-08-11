@@ -72,12 +72,22 @@ button {
     z-index: -100;
 }
 
+
 form label,
 form input[type="text"],
 form input[type="email"],
 form textarea,
 form button {
     margin-bottom: 20px;
+}
+
+.center {
+    margin: 0;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    -ms-transform: translate(-50%, -50%);
+    transform: translate(-50%, -50%);
 }
 
 #create-room-form {
@@ -94,4 +104,19 @@ form button {
 
 #about li {
     list-style: inside;
+}
+
+#choices {
+    text-align: center;
+    top: 50%;
+}
+
+#choices input[type="radio"] {
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+}
+
+#choices label:hover {
+    text-decoration: underline;
 }

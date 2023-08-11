@@ -5,7 +5,9 @@ var currentItem;
 var currentItemIndex = 0;
 
 function renderUserMustClick() {
+  fill(255);
   textAlign(CENTER, CENTER);
+  textSize(32);
   text("Click to start!", width / 2, height / 2);
 }
 
@@ -21,7 +23,7 @@ function renderWave() {
     for (var i = 0; i <= 180; i += 1) {
       var index = floor(map(i, 0, 180, 0, wave.length - 1));
 
-      var r = map(wave[index], -1, 1, 300, 600);
+      var r = map(wave[index], -1, 1, windowWidth / 2.5, windowHeight / 2.5);
 
       var x = r * sin(i) * t;
       var y = r * cos(i);
@@ -32,7 +34,8 @@ function renderWave() {
 }
 
 function renderProgressBar() {
-  strokeWeight(10);
+  let weight = 10;
+  strokeWeight(weight);
 
   let progressBarX = map(
     soundFile.currentTime(),
@@ -41,7 +44,7 @@ function renderProgressBar() {
     0,
     width
   );
-  let progressBarY = height - 10;
+  let progressBarY = height - weight / 2;
   line(0, progressBarY, progressBarX, progressBarY);
 }
 
@@ -51,6 +54,9 @@ class ItemMCQ {
     this.badAnswers = badAnswers;
     this.rendered = false;
     this.div = createDiv();
+
+    this.div.id("choices");
+    this.div.class("center");
   }
 
   getChoices() {
@@ -120,10 +126,8 @@ function setup() {
   canvas.style("z-index", "-1");
   angleMode(DEGREES);
 
-  //
   fft = new p5.FFT();
 
-  //
   getAudioContext().suspend();
 
   // get the first item in the series
@@ -134,6 +138,7 @@ function draw() {
   clear();
   background(0);
   stroke(255);
+  strokeWeight(1);
 
   if (getAudioContext().state === "suspended") {
     renderUserMustClick();
