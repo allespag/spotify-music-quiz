@@ -2,7 +2,55 @@ var fft;
 var canvas;
 var soundFile;
 var currentItem;
+var score;
 var currentItemIndex = 0;
+
+class Score {
+  constructor() {
+    this.value = 0;
+    this.element = createP("Score: " + this.value);
+
+    this.element.position(windowWidth - 200, 50);
+    this.element.class("unselectable");
+  }
+
+  shake() {
+    const intensity = 5; // Adjust the intensity of the shake
+    const duration = 500; // Duration of the shake in milliseconds
+    const startTime = Date.now();
+    var element = this.element;
+
+    function updatePosition() {
+      const elapsed = Date.now() - startTime;
+      if (elapsed < duration) {
+        const xOffset = Math.random() * intensity - intensity / 2;
+        const yOffset = Math.random() * intensity - intensity / 2;
+        element.style("transform", `translate(${xOffset}px, ${yOffset}px`);
+        requestAnimationFrame(updatePosition);
+      } else {
+        element.style("transform", "translate(0, 0)");
+      }
+    }
+
+    updatePosition();
+  }
+
+  updateAnimation(points) {
+    if (points == 0) {
+      return;
+    }
+    this.value += 1;
+    this.element.html("Score: " + this.value);
+    setTimeout(() => {
+      this.updateAnimation(points - 1);
+    }, 1);
+  }
+
+  update(points) {
+    points = Math.floor(points * 10);
+    this.updateAnimation(points);
+  }
+}
 
 function renderUserMustClick() {
   fill(255);
@@ -44,7 +92,7 @@ function renderProgressBar() {
     0,
     width
   );
-  let progressBarY = height - weight / 2;
+  let progressBarY = windowHeight - weight / 2;
   line(0, progressBarY, progressBarX, progressBarY);
 }
 
@@ -56,7 +104,7 @@ class ItemMCQ {
     this.div = createDiv();
 
     this.div.id("choices");
-    this.div.class("center");
+    this.div.class("center unselectable");
   }
 
   getChoices() {
@@ -67,8 +115,9 @@ class ItemMCQ {
 
   submit(title) {
     if (title == this.goodAnswer.title) {
-      // TODO: conffetti explosion animation ?
+      score.update(soundFile.duration() - soundFile.currentTime());
     } else {
+      score.shake();
       // TODO: sad rain animation ?
     }
     getNextItem();
@@ -82,7 +131,9 @@ class ItemMCQ {
       let choice = choices[i];
       let radio = createRadio("choices");
       radio.option(choice.title);
-      radio.changed(() => this.submit(choices.title));
+      radio.changed(() => {
+        this.submit(choice.title);
+      });
       form.child(radio);
     }
 
@@ -113,11 +164,15 @@ function getNextItem() {
   if (currentItem !== undefined) {
     currentItem.clear();
   }
-  currentItem = new ItemMCQ(
-    items[currentItemIndex].answer,
-    items[currentItemIndex].choices
-  );
-  currentItemIndex++;
+  if (currentItemIndex < items.length) {
+    currentItem = new ItemMCQ(
+      items[currentItemIndex].answer,
+      items[currentItemIndex].choices
+    );
+    currentItemIndex++;
+  } else {
+    currentItem = undefined;
+  }
 }
 
 function setup() {
@@ -127,8 +182,9 @@ function setup() {
   angleMode(DEGREES);
 
   fft = new p5.FFT();
-
   getAudioContext().suspend();
+
+  score = new Score();
 
   // get the first item in the series
   getNextItem();
@@ -142,7 +198,7 @@ function draw() {
 
   if (getAudioContext().state === "suspended") {
     renderUserMustClick();
-  } else {
+  } else if (currentItem !== undefined) {
     if (!currentItem.rendered) {
       currentItem.render();
     }

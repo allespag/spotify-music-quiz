@@ -1,10 +1,12 @@
 from __future__ import annotations
 
 import typing as tp
-from random import choices
+from random import choice
 
 import spotipy
 from pydantic import BaseModel
+
+from musicquiz.utils import safe_sample
 
 
 class Track(BaseModel):
@@ -51,7 +53,7 @@ def setup(client: spotipy.Spotify) -> str:
     class MCQ(BaseModel):
         items: list[ItemMCQ]
         CHOICES_COUNT: tp.ClassVar[int] = 4
-        LENGTH: tp.ClassVar[int] = 10
+        LENGTH: tp.ClassVar[int] = 30
 
         @classmethod
         def from_spotify_playlist_id(cls, spotify_playlist_id: str) -> MCQ:
@@ -65,7 +67,7 @@ def setup(client: spotipy.Spotify) -> str:
             tracks = [
                 track["track"] for track in tracks if track["track"]["preview_url"]
             ]
-            for track in choices(tracks, k=MCQ.LENGTH):
+            for track in safe_sample(tracks, k=MCQ.LENGTH):
                 item = ItemMCQ.from_spotify_track(track)
                 items.append(item)
 
@@ -73,7 +75,7 @@ def setup(client: spotipy.Spotify) -> str:
 
     client_id = client.me()["id"]
     # TODO: find a better way to choose a playlist
-    spotify_playlist_id = client.user_playlists(client_id)["items"][8]["id"]
+    spotify_playlist_id = choice(client.user_playlists(client_id)["items"])["id"]
 
     mcq = MCQ.from_spotify_playlist_id(spotify_playlist_id)
 
