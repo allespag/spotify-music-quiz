@@ -9,7 +9,16 @@
 {% block content %}
 <div id="create-room-form">
     <form>
-        <input id="roomID" type="text" placeholder="Room name" autocomplete="off">
+        <input id="roomID" type="text" placeholder="Room name" autocomplete="off" required>
+        <br>
+        <div>
+            <select id="playlists" required>
+                {% for playlist in playlists %}
+                <option value="{{ playlist.id }}">{{ playlist.name }}</option>
+                <br>
+                {% endfor %}
+            </select>
+        </div>
         <br>
     </form>
     <button id="sendRoomCreatedButton">Play</button>

@@ -118,7 +118,6 @@ class ItemMCQ {
       score.update(soundFile.duration() - soundFile.currentTime());
     } else {
       score.shake();
-      // TODO: sad rain animation ?
     }
     getNextItem();
   }

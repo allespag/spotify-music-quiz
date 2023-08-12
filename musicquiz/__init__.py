@@ -48,6 +48,7 @@ def create_app(config_path: Path) -> Flask:
     @socketio.event
     def room_created(data: dict):
         room_id = data["room_id"]
+        playlist_id = data["playlist_id"]
         try:
             r = room_factory.create_room(room_id)
         except RoomFactoryException as e:
@@ -55,7 +56,10 @@ def create_app(config_path: Path) -> Flask:
             raise e
         else:
             r.join(client)
-            socketio.emit("redirect", {"url": url_for("room", room_id=room_id)})
+            socketio.emit(
+                "redirect",
+                {"url": url_for("room", room_id=room_id, playlist_id=playlist_id)},
+            )
 
     @app.route("/")
     def index():
@@ -100,22 +104,28 @@ def create_app(config_path: Path) -> Flask:
 
         return redirect("/")
 
-    @app.route("/room/<string:room_id>")
+    # TODO: playlist_id should not appear in the route
+    @app.route("/room/<string:room_id>/<string:playlist_id>")
     @login_required
-    def room(room_id: str):
+    def room(room_id: str, playlist_id: str):
         r = room_factory.get_room(room_id)
 
         if r is None:
             abort(404)
 
         assert client is not None
-        mcq = setup(client)
+        mcq = setup(client, playlist_id)
         return render_template("game.html", client=client, mcq=mcq)
 
     @app.route("/create_room")
     @login_required
     def create_room():
-        return render_template("create_room.html", client=client)
+        assert client is not None
+
+        user_playlists = client.current_user_playlists()["items"]
+        return render_template(
+            "create_room.html", client=client, playlists=user_playlists
+        )
 
     @app.route("/about")
     def about():

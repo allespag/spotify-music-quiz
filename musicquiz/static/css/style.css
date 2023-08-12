@@ -125,6 +125,6 @@ form button {
     -moz-appearance: none;
 }
 
-#choices label:hover {
+#choices label:hover{
     text-decoration: underline;
 }

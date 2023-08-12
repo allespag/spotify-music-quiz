@@ -9,10 +9,8 @@ Also, I used [p5.js](https://p5js.org/) to create the *animations*.
 ## Some TODOs
 
 * Tell the user that the room already exists
-* Allow the user to choose which playlist to play on
 * Create a `404.html` template with a fun gif !
 * Deploy
-* Win/loss animation
 * Multiplayer
 * More tests
 * Volume slider

@@ -11,9 +11,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
   function sendRoomCreated() {
     const roomID = document.getElementById("roomID").value;
+    const playlists = document.getElementById("playlists");
+    const playlistID = playlists.options[playlists.selectedIndex].value;
 
-    if (roomID) {
-      socket.emit("room_created", { room_id: roomID });
+    if (roomID && playlistID) {
+      socket.emit("room_created", { room_id: roomID, playlist_id: playlistID });
     }
   }
 

@@ -30,7 +30,7 @@ class Track(BaseModel):
         )
 
 
-def setup(client: spotipy.Spotify) -> str:
+def setup(client: spotipy.Spotify, playlist_id: str) -> str:
     class ItemMCQ(BaseModel):
         answer: Track
         choices: list[Track]
@@ -73,10 +73,6 @@ def setup(client: spotipy.Spotify) -> str:
 
             return cls(items=items)
 
-    client_id = client.me()["id"]
-    # TODO: find a better way to choose a playlist
-    spotify_playlist_id = choice(client.user_playlists(client_id)["items"])["id"]
-
-    mcq = MCQ.from_spotify_playlist_id(spotify_playlist_id)
+    mcq = MCQ.from_spotify_playlist_id(playlist_id)
 
     return mcq.model_dump_json()
